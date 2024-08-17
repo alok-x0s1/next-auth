@@ -5,19 +5,21 @@ import { mailTemplet } from "./mailTemplet";
 
 export const sendEmail = async ({ email, emailType, userId }: any) => {
 	try {
-		console.log("hello100");
 		const salt = await bcryptjs.genSalt(10);
 		const hashedToken = await bcryptjs.hash(userId, salt);
-		console.log(hashedToken);
 		if (emailType === "VERIFY") {
 			await User.findByIdAndUpdate(userId, {
-				verificationToken: hashedToken,
-				verificationTokenExpiry: Date.now() + 3600000,
+				$set: {
+					verificationToken: hashedToken,
+					verificationTokenExpiry: Date.now() + 3600000,
+				},
 			});
 		} else if (emailType === "RESET") {
 			await User.findByIdAndUpdate(userId, {
-				forgotPasswordToken: hashedToken,
-				forgotPasswordTokenExpiry: Date.now() + 3600000,
+				$set: {
+					forgotPasswordToken: hashedToken,
+					forgotPasswordTokenExpiry: Date.now() + 3600000,
+				},
 			});
 		}
 
@@ -30,8 +32,6 @@ export const sendEmail = async ({ email, emailType, userId }: any) => {
 			},
 		});
 
-		console.log("hello4");
-
 		const mailOptions = {
 			from: "Next-auth <" + process.env.USER_MAIL + ">",
 			to: email,
@@ -39,7 +39,11 @@ export const sendEmail = async ({ email, emailType, userId }: any) => {
 				emailType === "VERIFY"
 					? "Verify your account"
 					: "Reset your password",
-			html: mailTemplet({ reciever: email, emailType, link: `${process.env.DOMAIN}/verify-email?token=${hashedToken}` })
+			html: mailTemplet({
+				reciever: email,
+				emailType,
+				link: `${process.env.DOMAIN}/verify-email?token=${hashedToken}`,
+			}),
 		};
 
 		const mailResponse = await transport.sendMail(mailOptions);
