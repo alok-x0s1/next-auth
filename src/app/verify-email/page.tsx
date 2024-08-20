@@ -36,7 +36,7 @@ export default function VerifyEmail() {
 		if (token) {
 			handleSubmit();
 		}
-	}, [token]);
+	}, []);
 
 	return (
 		<div className="flex justify-center items-center min-h-screen bg-white">
